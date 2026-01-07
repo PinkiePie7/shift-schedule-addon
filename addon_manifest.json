@@ -1,0 +1,35 @@
+{
+  "name": "Plánování směn",
+  "description": "Systém pro manuální plánování a správu pracovních směn v dílně. Všechna data se ukládají přímo v Home Assistant.",
+  "version": "1.0.0",
+  "slug": "shift-schedule",
+  "startup": "application",
+  "boot": "auto",
+  "ports": {
+    "8080/tcp": {
+      "description": "Webové rozhraní aplikace",
+      "protocol": "http"
+    }
+  },
+  "ports_description": {
+    "8080/tcp": "Webové rozhraní - otevřete http://homeassistant.local:8080"
+  },
+  "options": {
+    "backup_enabled": true,
+    "backup_interval": 86400
+  },
+  "schema": {
+    "backup_enabled": "bool",
+    "backup_interval": "int"
+  },
+  "image": "ghcr.io/homeassistant/amd64-base-python:latest",
+  "map": [
+    "config/shift_schedule"
+  ],
+  "environment": {
+    "LOG_LEVEL": "info"
+  },
+  "homeassistant_api": true,
+  "host_network": false,
+  "privileged": []
+}

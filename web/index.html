@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Systém směn - Dílna</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Systém směn - Dílna</h1>
+            <div class="header-controls">
+                <div class="current-date" id="currentDate"></div>
+                <button class="btn btn--secondary" id="settingsBtn">Nastavení</button>
+                <div class="validation-summary" id="validationSummary">
+                    <span class="validation-count" id="validationCount">0 problémů</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Tab Navigation -->
+        <nav class="tab-navigation">
+            <button class="tab-btn active" data-tab="monthly-view">
+                <span class="tab-icon">📅</span>
+                Aktuální týden
+            </button>
+            <button class="tab-btn" data-tab="current-week">
+                <span class="tab-icon">🗓️</span>
+                Měsíční pohled
+            </button>
+            <button class="tab-btn" data-tab="statistics">
+                <span class="tab-icon">📊</span>
+                Statistiky
+            </button>
+            <button class="tab-btn" data-tab="settings">
+                <span class="tab-icon">⚙️</span>
+                Nastavení
+            </button>
+            <button class="tab-btn" data-tab="data-management">
+                <span class="tab-icon">💾</span>
+                Správa dat
+            </button>
+        </nav>
+
+        <main class="main-content">
+            <!-- Monthly View Tab Content -->
+            <div class="tab-content active" id="monthly-view">
+            <!-- Aktuální den -->
+            <section class="current-day">
+                <h2>Aktuální den</h2>
+                <div class="current-shifts">
+                    <div class="shift-card morning">
+                        <h3>Ranní směna</h3>
+                        <div class="technicians" id="currentMorning">-</div>
+                    </div>
+                    <div class="shift-card afternoon">
+                        <h3>Odpolední směna</h3>
+                        <div class="technicians" id="currentAfternoon">-</div>
+                    </div>
+                    <div class="shift-card night">
+                        <h3>Noční směna</h3>
+                        <div class="technicians" id="currentNight">-</div>
+                        <div class="standby" id="currentStandby">Pohotovost: -</div>
+                    </div>
+                    <div class="shift-card external">
+                        <h3>Externí technik</h3>
+                        <div class="technicians" id="currentExternal">-</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Následujících 7 dní -->
+            <section class="weekly-schedule">
+                <h2>Následujících 7 dní</h2>
+                <div class="schedule-table-container">
+                    <table class="schedule-table" id="scheduleTable">
+                        <thead>
+                            <tr>
+                                <th>Datum</th>
+                                <th>Ranní směna</th>
+                                <th>Odpolední směna</th>
+                                <th>Noční směna</th>
+                                <th>Externí technik</th>
+                            </tr>
+                        </thead>
+                        <tbody id="scheduleBody">
+                            <!-- Schedule rows will be generated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            </div>
+
+            <!-- Current Week Tab Content -->
+            <div class="tab-content" id="current-week">
+                <section class="monthly-view">
+                    <h2>Měsíční pohled</h2>
+                    <div class="monthly-controls">
+                        <div class="month-selector">
+                            <button class="btn btn--outline btn--sm" id="prevMonth">‹ Předchozí</button>
+                            <span class="current-month" id="currentMonthDisplay">Listopad 2025</span>
+                            <button class="btn btn--outline btn--sm" id="nextMonth">Následující ›</button>
+                        </div>
+                        <div class="view-controls">
+                            <button class="btn btn--secondary btn--sm" id="clearMonth">🗑️ Vyčistit měsíc</button>
+                            <button class="btn btn--secondary btn--sm" id="validationReport">⚠️ Validační zpráva</button>
+                            <button class="btn btn--secondary btn--sm" id="printMonthly">🖨️ Tisk</button>
+                            <button class="btn btn--secondary btn--sm" id="exportMonthly">📋 Export</button>
+                        </div>
+                    </div>
+                    <div class="calendars-container" id="calendarsContainer">
+                        <!-- Monthly calendars will be generated here -->
+                    </div>
+                    <div class="calendar-legend">
+                        <h4>Legenda směn:</h4>
+                        <div class="legend-items">
+                            <div class="legend-item"><span class="legend-color morning"></span>Ranní směna</div>
+                            <div class="legend-item"><span class="legend-color afternoon"></span>Odpolední směna</div>
+                            <div class="legend-item"><span class="legend-color night"></span>Noční směna</div>
+                            <div class="legend-item"><span class="legend-color external"></span>Externí technik</div>
+                        </div>
+                        <h4>Stav přiřazení:</h4>
+                        <div class="legend-items">
+                            <div class="legend-item"><span class="legend-color assigned"></span>Kompletně přiřazeno</div>
+                            <div class="legend-item"><span class="legend-color warning"></span>Upozornění</div>
+                            <div class="legend-item"><span class="legend-color error"></span>Chyba</div>
+                            <div class="legend-item"><span class="legend-color unassigned"></span>Nezadano</div>
+                            <div class="legend-item"><span class="legend-color weekend"></span>Víkend</div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Statistics Tab Content -->
+            <div class="tab-content" id="statistics">
+                <section class="statistics">
+                    <h2>Statistiky</h2>
+                    <div class="statistics-controls">
+                        <div class="filter-controls">
+                            <select class="form-control" id="monthFilter">
+                                <option value="all">Všechny měsíce</option>
+                                <option value="11">Listopad 2025</option>
+                                <option value="12">Prosinec 2025</option>
+                                <option value="1">Leden 2026</option>
+                            </select>
+                            <select class="form-control" id="shiftFilter">
+                                <option value="all">Všechny směny</option>
+                                <option value="morning">Ranní směny</option>
+                                <option value="afternoon">Odpolední směny</option>
+                                <option value="night">Noční směny</option>
+                            </select>
+                        </div>
+                        <div class="export-controls">
+                            <button class="btn btn--secondary btn--sm" id="printStats">🖨️ Tisk</button>
+                            <button class="btn btn--secondary btn--sm" id="exportStats">📋 Export</button>
+                        </div>
+                    </div>
+                    
+                    <div class="statistics-grid">
+                        <div class="stats-summary">
+                            <h3>Přehled</h3>
+                            <div class="summary-cards" id="summaryCards">
+                                <!-- Summary cards will be generated here -->
+                            </div>
+                        </div>
+                        
+                        <div class="stats-table">
+                            <h3>Detailní statistiky</h3>
+                            <div class="table-container">
+                                <table class="statistics-table" id="statisticsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Technik</th>
+                                            <th>Ranní směny</th>
+                                            <th>Odpolední směny</th>
+                                            <th>Noční směny</th>
+                                            <th>Pohotovosti</th>
+                                            <th>Celkem dní</th>
+                                            <th>Volné dny</th>
+                                            <th>Vytížení</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="statisticsBody">
+                                        <!-- Statistics rows will be generated here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="stats-charts">
+                            <h3>Vizualizace</h3>
+                            <div class="chart-container">
+                                <canvas id="shiftsChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Data Management Tab Content -->
+            <div class="tab-content" id="data-management">
+                <section class="data-management">
+                    <h2>Správa dat</h2>
+                    
+                    <!-- Network Sync Section -->
+                    <div class="data-section">
+                        <h3>Síťová synchronizace</h3>
+                        <div class="sync-controls">
+                            <div class="sync-status-panel">
+                                <div class="status-indicator" id="networkStatus">
+                                    <span class="status-dot offline" id="statusDot"></span>
+                                    <span class="status-text" id="statusText">Offline režim</span>
+                                </div>
+                                <div class="last-sync" id="lastSyncTime">
+                                    Poslední synchronizace: Nikdy
+                                </div>
+                            </div>
+                            
+                            <div class="sync-actions">
+                                <button class="btn btn--primary" id="syncNowBtn">Synchronizovat nyní</button>
+                                <button class="btn btn--outline" id="testConnectionBtn">Otestovat připojení</button>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="autoSyncToggle">
+                                    Automatická synchronizace
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- File Operations Section -->
+                    <div class="data-section">
+                        <h3>Operace se soubory</h3>
+                        <div class="file-operations">
+                            <div class="operation-group">
+                                <h4>Export dat</h4>
+                                <button class="btn btn--secondary" id="exportDataBtn">
+                                    <span class="btn-icon">📤</span>
+                                    Exportovat do souboru
+                                </button>
+                                <button class="btn btn--secondary" id="saveToNetworkBtn">
+                                    <span class="btn-icon">🌐</span>
+                                    Uložit do sítě
+                                </button>
+                            </div>
+                            
+                            <div class="operation-group">
+                                <h4>Import dat</h4>
+                                <input type="file" id="importFileInput" accept=".json" style="display: none;">
+                                <button class="btn btn--secondary" id="importDataBtn">
+                                    <span class="btn-icon">📥</span>
+                                    Importovat ze souboru
+                                </button>
+                                <button class="btn btn--secondary" id="loadFromNetworkBtn">
+                                    <span class="btn-icon">🌐</span>
+                                    Načíst ze sítě
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Network Setup Section -->
+                    <div class="data-section">
+                        <h3>Nastavení sítě</h3>
+                        <div class="network-setup">
+                            <div class="form-group">
+                                <label class="form-label" for="sharedFolderPath">Cesta ke sdílené složce</label>
+                                <input type="text" id="sharedFolderPath" class="form-control" 
+                                       placeholder="\\\\server\\shared\\workshop-shifts\\" 
+                                       value="">
+                                <div class="help-text">
+                                    Příklad: \\\\server\\shared\\workshop-shifts\\ nebo Z:\\workshop-shifts\\
+                                </div>
+                            </div>
+                            
+                            <div class="setup-status" id="setupStatus" style="display: none;">
+                                <div class="status-message" id="setupMessage"></div>
+                            </div>
+                            
+                            <button class="btn btn--primary" id="saveNetworkSettingsBtn">Uložit nastavení</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Backup Management Section -->
+                    <div class="data-section">
+                        <h3>Správa záloh</h3>
+                        <div class="backup-management">
+                            <div class="backup-actions">
+                                <button class="btn btn--outline" id="createBackupBtn">
+                                    <span class="btn-icon">💾</span>
+                                    Vytvořit zálohu
+                                </button>
+                                <button class="btn btn--outline" id="downloadBackupBtn">
+                                    <span class="btn-icon">📁</span>
+                                    Stáhnout zálohu
+                                </button>
+                            </div>
+                            
+                            <div class="backup-list" id="backupList">
+                                <h4>Dostupné zálohy</h4>
+                                <div class="backup-items" id="backupItems">
+                                    <div class="no-backups">Žádné zálohy nejsou k dispozici</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Instructions Section -->
+                    <div class="data-section instructions-section">
+                        <h3>Instrukce k nastavení</h3>
+                        <div class="instructions-content">
+                            <div class="instruction-step">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <h4>Vytvořte sdílenou složku na serveru</h4>
+                                    <p>Vytvořte složku na síťovém serveru, která bude dostupná všem počítačům v síti.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="instruction-step">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <h4>Nastavte oprávnění pro čtení a zápis</h4>
+                                    <p>Ujistěte se, že všichni uživatelé mají oprávnění ke čtení a zápisu do sdílené složky.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="instruction-step">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <h4>Zadejte cestu ke složce v nastavení</h4>
+                                    <p>Vložte úplnou cestu k sdílené složce do pole "Cesta ke sdílené složce" výše.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="instruction-step">
+                                <div class="step-number">4</div>
+                                <div class="step-content">
+                                    <h4>Otestujte připojení</h4>
+                                    <p>Klikněte na "Otestovat připojení" pro ověření, že je sdílená složka dostupná.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="instruction-step">
+                                <div class="step-number">5</div>
+                                <div class="step-content">
+                                    <h4>Zapněte automatickou synchronizaci</h4>
+                                    <p>Po úspěšném otestování zapněte automatickou synchronizaci pro pravidelné ukládání dat.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="troubleshooting">
+                            <h4>Řešení problémů</h4>
+                            <ul>
+                                <li>Pokud se nemohu připojit k síťové složce, zkontrolujte síťové připojení a oprávnění.</li>
+                                <li>Ujistěte se, že používáte správný formát cesty (\\\\server\\cesta nebo jednotka:\\cesta).</li>
+                                <li>V případě problémů s oprávněními kontaktujte správce sítě.</li>
+                                <li>Data se automaticky ukládají lokálně jako záloha.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            
+            <!-- Settings Tab Content -->
+            <div class="tab-content" id="settings">
+                <section class="settings">
+                    <h2>Nastavení</h2>
+                    <div class="settings-content">
+                        <p>Pro úpravu techniků použijte tlačítko "Nastavení" v hlavičce aplikace.</p>
+                        <div class="settings-info">
+                            <h4>Pravidla rozvrhu:</h4>
+                            <ul>
+                                <li>Období provozu: <span id="settingsOperationPeriod">24.11.2025 - 31.01.2026</span></li>
+                                <li>Ranní směna: 0-2 technici (flexibilní)</li>
+                                <li>Odpolední směna: 0-2 technici (flexibilní)</li>
+                                <li>Noční směna: 0-2 technici (flexibilní)</li>
+                                <li>Pohotovost: volitelná, nezávisle na směnách</li>
+                                <li>Maximálně 5 nočních směn v řadě</li>
+                                <li>Minimálně 1 den volna za týden</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- Settings Modal -->
+        <div class="modal" id="settingsModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Nastavení techniků</h2>
+                    <button class="close-btn" id="closeSettings">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <!-- Period Settings Section -->
+                    <div class="period-settings">
+                        <h3>Nastavení období</h3>
+                        <div class="current-period-info">
+                            <div class="period-info-item">
+                                <label>Aktuální období:</label>
+                                <span id="currentPeriodDisplay">24.11.2025 - 31.01.2026</span>
+                            </div>
+                            <div class="period-info-item">
+                                <label>Celkem dní:</label>
+                                <span id="totalPeriodDays">69 dní</span>
+                            </div>
+                        </div>
+                        
+                        <form id="periodForm">
+                            <div class="form-group">
+                                <label class="form-label" for="periodStartDate">Datum začátku</label>
+                                <input type="date" id="periodStartDate" class="form-control" required>
+                                <div class="help-text">Minimálně 7 dní před koncem období</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="periodEndDate">Datum konce</label>
+                                <input type="date" id="periodEndDate" class="form-control" required>
+                                <div class="help-text">Maximálně 1 rok od začátku</div>
+                            </div>
+                            
+                            <div class="period-warnings" id="periodWarnings" style="display: none;">
+                                <div class="warning-content" id="periodWarningContent"></div>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="button" class="btn btn--primary" id="savePeriodBtn">Uložit období</button>
+                                <button type="button" class="btn btn--outline" id="resetPeriodBtn">Obnovit výchozí</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="technician-form">
+                        <h3 id="formTitle">Přidat technika</h3>
+                        <form id="technicianForm">
+                            <input type="hidden" id="editIndex" value="-1">
+                            <div class="form-group">
+                                <label class="form-label" for="firstName">Křestní jméno</label>
+                                <input type="text" id="firstName" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="lastName">Příjmení</label>
+                                <input type="text" id="lastName" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="phone">Telefon</label>
+                                <input type="tel" id="phone" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="external">
+                                    Externí
+                                </label>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn--primary">Uložit</button>
+                                <button type="button" class="btn btn--secondary" id="cancelForm">Zrušit</button>
+                                <button type="button" class="btn btn--outline" id="deleteBtn" style="display: none;">Smazat</button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="technicians-list">
+                        <h3>Seznam techniků</h3>
+                        <div class="technicians-grid" id="techniciansGrid">
+                            <!-- Technicians list will be generated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shift Assignment Modal -->
+        <div class="modal" id="assignmentModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="assignmentModalTitle">Zadání směn pro</h2>
+                    <button class="close-btn" id="closeAssignment">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="assignment-form">
+                        <input type="hidden" id="assignmentDate" value="">
+                        
+                        <div class="form-group">
+                            <label class="form-label">Ranní směna - Technik 1</label>
+                            <select class="form-control" id="morningTech1">
+                                <option value="">Nezadáno</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Ranní směna - Technik 2 (volitelné)</label>
+                            <select class="form-control" id="morningTech2">
+                                <option value="">Nezadáno</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Odpolední směna - Technik 1</label>
+                            <select class="form-control" id="afternoonTech1">
+                                <option value="">Nezadáno</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Odpolední směna - Technik 2 (volitelné)</label>
+                            <select class="form-control" id="afternoonTech2">
+                                <option value="">Nezadáno</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Noční směna - Technik 1</label>
+                            <select class="form-control" id="nightTech1">
+                                <option value="">Nezadáno</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Noční směna - Technik 2 (volitelné)</label>
+                            <select class="form-control" id="nightTech2">
+                                <option value="">Nezadáno</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Pohotovost (volitelné)</label>
+                            <select class="form-control" id="standbyTech">
+                                <option value="">Nezadáno</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Externí technik (volitelné)</label>
+                            <select class="form-control" id="externalTech">
+                                <option value="">Nezadáno</option>
+                            </select>
+                        </div>
+                        
+                        <div class="validation-warnings" id="assignmentWarnings"></div>
+                        
+                        <div class="form-actions">
+                            <button class="btn btn--primary" id="saveAssignment">Uložit</button>
+                            <button class="btn btn--outline" id="clearDay">Vyčistit den</button>
+                            <button class="btn btn--secondary" id="cancelAssignment">Zrušit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Conflict Resolution Modal -->
+        <div class="modal" id="conflictModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Vyřešit konflikt dat</h2>
+                    <button class="close-btn" id="closeConflict">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="conflict-info">
+                        <p>Byly zjištěny rozdíly mezi lokálními daty a daty na síti. Vyberte, jak chcete konflikt vyřešit:</p>
+                    </div>
+                    
+                    <div class="conflict-options">
+                        <div class="conflict-option">
+                            <h4>Zachovat lokální verzi</h4>
+                            <p>Vaše místní data přepíší data na síti.</p>
+                            <div class="version-info" id="localVersionInfo"></div>
+                            <button class="btn btn--primary" id="keepLocalBtn">Použít lokální data</button>
+                        </div>
+                        
+                        <div class="conflict-option">
+                            <h4>Použít síťovou verzi</h4>
+                            <p>Data ze sítě přepíší vaše místní data.</p>
+                            <div class="version-info" id="remoteVersionInfo"></div>
+                            <button class="btn btn--primary" id="keepRemoteBtn">Použít síťová data</button>
+                        </div>
+                        
+                        <div class="conflict-option">
+                            <h4>Vytvořit zálohu a sloučit</h4>
+                            <p>Vytvoří zálohu lokálních dat před načtením síťových dat.</p>
+                            <button class="btn btn--outline" id="mergeDataBtn">Sloučit s zálohou</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Period Confirmation Modal -->
+        <div class="modal" id="periodConfirmModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Potvrzení změny období</h2>
+                    <button class="close-btn" id="closePeriodConfirm">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="period-change-info">
+                        <div class="period-comparison">
+                            <div class="period-item">
+                                <h4>Současné období</h4>
+                                <div class="period-dates" id="currentPeriodInfo"></div>
+                            </div>
+                            <div class="period-item">
+                                <h4>Nové období</h4>
+                                <div class="period-dates" id="newPeriodInfo"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="period-impact" id="periodImpact">
+                            <!-- Impact information will be populated here -->
+                        </div>
+                        
+                        <div class="period-warning">
+                            <div class="warning-icon">⚠️</div>
+                            <div class="warning-text">
+                                <strong>Varování:</strong> Změna období může ovlivnit existující data rozvrhu.
+                                Před změnou bude automaticky vytvořena záloha.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="confirmation-actions">
+                        <button class="btn btn--primary" id="confirmPeriodChangeBtn">Potvrdit změnu</button>
+                        <button class="btn btn--secondary" id="cancelPeriodChangeBtn">Zrušit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Validation Report Modal -->
+        <div class="modal" id="validationModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Validační zpráva</h2>
+                    <button class="close-btn" id="closeValidation">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="validation-report" id="validationReportContent">
+                        <!-- Validation report content will be generated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
